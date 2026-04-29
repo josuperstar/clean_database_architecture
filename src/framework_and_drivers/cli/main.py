@@ -3,6 +3,7 @@ from __future__ import annotations
 import typer
 
 from framework_and_drivers.composition.factory import build_list_shots_controller
+from framework_and_drivers.env_bootstrap import load_application_dotenv
 from framework_and_drivers.tracking_sources import resolve_tracking_source
 from interface_adapters.controllers.request_models import ListShotsRequestModel
 
@@ -50,6 +51,7 @@ def list_shots(
 
 
 def run_cli() -> None:
+    load_application_dotenv()
     app()
 
 

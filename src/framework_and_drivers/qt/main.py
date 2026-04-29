@@ -15,12 +15,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from framework_and_drivers.env_bootstrap import load_application_dotenv
 from framework_and_drivers.composition.factory import build_list_shots_controller_qt
 from framework_and_drivers.tracking_sources import TRACKING_SOURCES
 from interface_adapters.controllers.request_models import ListShotsRequestModel
 
 
 def run_qt() -> int:
+    load_application_dotenv()
     app = QApplication(sys.argv)
     window = QWidget()
     window.setWindowTitle("Shots — Clean Architecture demo")

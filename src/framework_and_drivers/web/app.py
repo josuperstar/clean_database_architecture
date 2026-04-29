@@ -4,9 +4,12 @@ from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 
 from framework_and_drivers.composition.factory import build_list_shots_controller
+from framework_and_drivers.env_bootstrap import load_application_dotenv
 from framework_and_drivers.tracking_sources import resolve_tracking_source
 from framework_and_drivers.view_sinks.web_shots_sink import WebPresentationResult
 from interface_adapters.controllers.request_models import ListShotsRequestModel
+
+load_application_dotenv()
 
 app = FastAPI(title="Shots listing (Clean Architecture demo)", version="0.1.0")
 

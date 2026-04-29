@@ -8,6 +8,7 @@ Requires-Dist: typer>=0.12
 Requires-Dist: fastapi>=0.115
 Requires-Dist: uvicorn[standard]>=0.30
 Requires-Dist: pydantic>=2.0
+Requires-Dist: python-dotenv>=1.0
 Provides-Extra: dev
 Requires-Dist: pytest>=8; extra == "dev"
 Provides-Extra: qt
@@ -26,9 +27,22 @@ Requires-Dist: gazu>=0.10; extra == "all"
 
 # Clean Architecture: multi-tracker shots listing
 
-Python demo of Clean Architecture with four packages under `src/`: `business_entities`, `use_cases`, `interface_adapters`, and `framework_and_drivers`.
+Python demo of Clean Architecture with four top-level packages under `src/`: `business_entities`, `use_cases`, `interface_adapters`, and `frameworks_and_drivers`.
 
-Use cases do not import frameworks or vendor SDKs. SDK calls live under `framework_and_drivers/integrations/`. Interface adapters depend on Protocols; fakes and real clients implement those Protocols.
+Use cases do not import frameworks or vendor SDKs. SDK calls live under `frameworks_and_drivers/integrations/`. Interface adapters depend on Protocols; fakes and real clients implement those Protocols.
+
+## Clean architecture layers
+
+This project uses the same four-layer idea as the internal `clean_architecture_example` (rez) demo, but remains **pip-installable** via `pyproject.toml` (no rez `package.py`).
+
+| Layer | Role | Location |
+| --- | --- | --- |
+| **Business entities** | Domain types and rules | `src/business_entities/` |
+| **Use cases** | Application workflows; only entities + ports | `src/use_cases/` |
+| **Interface adapters** | Controllers, presenters, view models, repositories | `src/interface_adapters/` |
+| **Frameworks and drivers** | CLI, web, Qt, vendor SDKs, composition, sinks | `src/frameworks_and_drivers/` |
+
+User-facing entrypoints mirror the template’s `user_interfaces` grouping: `frameworks_and_drivers/user_interfaces/cli`, `…/web`, and `…/qt`.
 
 ## Features
 
@@ -38,126 +52,99 @@ Use cases do not import frameworks or vendor SDKs. SDK calls live under `framewo
 
 ## Setup
 
-**PowerShell (Windows):**
+From the repository root, using **`python3`** or **`python`** (whichever your OS provides):
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
-python -m pytest
-```
-
-If **`Activate.ps1` is blocked** (execution policy), pick one:
-
-- **One session only:** `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` then run `Activate.ps1` again.
-- **Current user (recommended once):** `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-- **Avoid `.ps1`:** in **cmd.exe** run `.venv\Scripts\activate.bat` instead of `Activate.ps1`.
-- **Skip activate:** use `.venv\Scripts\python.exe -m pytest` (full path to venv Python).
-
-If **`pytest` fails with null bytes** in `tests/*.py`, your test files were saved as UTF-16. Run `python tools\fix_encoding.py` (it fixes `src/` and `tests/` too), then run pytest again.
-
-Optional: `python -m pip install -e ".[qt]"` for Qt; `".[shotgun]"`, `".[ftrack]"`, `".[kitsu]"` for vendors; `".[all]"` for all.
-
-### If `pip install -e` fails with `tomllib.TOMLDecodeError` on `pyproject.toml`
-
-The file on disk is almost certainly **UTF-16** (or otherwise not UTF-8).
-
-From the repo root (needs a working `python`):
-
-```powershell
-python tools\fix_encoding.py
-python -m pip install -e ".[dev]"
-```
-
-That script also rewrites **`src/**/*.py`** and **`tests/**/*.py`** to UTF-8 (fixes `SyntaxError: null bytes` after bad editor encoding).
-
-Or double-click / run **`tools\fix_encoding.cmd`**.
-
-Then in **Cursor**: set default encoding to UTF-8 (**Settings**, search **encoding**, **Files: Encoding** = `utf8`) so new saves are not UTF-16.
-
-**Or** open `pyproject.toml` -> status bar **encoding** -> **Save with Encoding** -> **UTF-8**.
-
-### If `pip install -e` fails with `UnicodeDecodeError` on `README.md`
-
-`README.md` must be **UTF-8** (not Windows-1252 / cp1252 smart quotes). In Cursor: open `README.md` -> **Save with Encoding** -> **UTF-8**.
-
-Or run `python tools\fix_encoding.py` (it also repairs `README.md`, including cp1252 fallback when UTF-8 is invalid).
-
-### Windows: "Python est introuvable" (still, after installing Python)
-
-That text almost always means the command **`python` is still the Microsoft Store shim**, not the interpreter you installed.
-
-**Step A - See what Windows runs**
-
-In PowerShell:
-
-```powershell
-where.exe python
-```
-
-- If the **first** line is like `...\WindowsApps\python.exe`, that entry **wins** and will keep opening the Store / failing.
-- You want the **first** line to be something like  
-  `C:\Users\Jonathan\AppData\Local\Programs\Python\Python3xx\python.exe`  
-  (or under `C:\Program Files\Python3xx\`).
-
-**Step B - Turn off the Store aliases (do this even if you added Python to PATH)**
-
-1. Settings -> Apps -> Advanced app settings -> **App execution aliases**.
-2. Set **python.exe** and **python3.exe** linked to the **Microsoft Store** to **Off**.
-
-Close **all** PowerShell / Terminal windows, open a **new** one, run `where.exe python` again.
-
-**Step C - If `python` still fails, call the real exe by path**
-
-List typical install folders (adjust the folder name if yours differs):
-
-```powershell
-Get-ChildItem "$env:LOCALAPPDATA\Programs\Python" -ErrorAction SilentlyContinue
-```
-
-Then create the venv with the full path (example for 3.12):
-
-```powershell
-cd c:\Users\Jonathan\clean_database_architecture
-& "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe" -m venv .venv
-.\.venv\Scripts\Activate.ps1
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e ".[dev]"
 python -m pytest
 ```
 
-After activation, `python` inside the venv is the venv interpreter, so commands below `Activate.ps1` work.
+On **Windows**, activate the venv with `.venv\Scripts\activate` (Command Prompt) or `.venv\Scripts\Activate.ps1` (PowerShell). If PowerShell blocks scripts, use `activate.bat`, or run the venv interpreter directly, for example `.venv\Scripts\python.exe -m pytest`.
 
-**Step D - Fix PATH for the future (optional)**
+Optional extras: `python -m pip install -e ".[qt]"` for Qt; `".[shotgun]"`, `".[ftrack]"`, `".[kitsu]"` for vendor APIs; `".[all]"` for everything.
 
-- Re-run the **python.org** installer -> **Modify** -> **Next** -> enable **Add Python to environment variables** -> finish, **or**
-- Run `py -0p` if the **py** launcher works; if it does, you can use `py -3 -m venv .venv` instead of `python -m venv`.
+### If `pytest` reports null bytes or `SyntaxError` in `tests/` or `src/`
 
-If `.\.venv\Scripts\Activate.ps1` is missing, the venv was never created - complete Step B/C first, then run `python ... -m venv .venv` again.
+Sources were probably saved as **UTF-16**. Re-save affected files as **UTF-8** in your editor, or run `python tools/fix_encoding.py` from the repo root if that script exists in your checkout, then run `pytest` again.
 
-Copy `.env.example` to `.env` for real backends.
+### If `pip install -e` fails with `tomllib.TOMLDecodeError` on `pyproject.toml`
+
+The file is almost certainly **UTF-16** (or not UTF-8). Open `pyproject.toml`, choose **UTF-8** encoding, and save again (in VS Code / Cursor: status bar encoding → **Save with Encoding** → **UTF-8**). If you have `tools/fix_encoding.py`, you can run `python tools/fix_encoding.py` from the repo root.
+
+### If `pip install -e` fails with `UnicodeDecodeError` on `README.md`
+
+Save `README.md` as **UTF-8** (same editor steps as above). A `fix_encoding` helper, if present, can also normalize the file.
+
+### Windows notes (optional)
+
+If `python` opens the **Microsoft Store** stub instead of your install: **Settings → Apps → App execution aliases** and turn off the Store aliases for `python.exe` / `python3.exe`, or install from [python.org](https://www.python.org/downloads/) and ensure **Add Python to PATH** is enabled. Use `where python` (cmd) or `Get-Command python` (PowerShell) to confirm which executable runs.
+
+### Credentials (ShotGrid, ftrack, Kitsu)
+
+Live API clients read **environment variables** (see `shotgun_client.py`, `ftrack_client.py`, and `kitsu_client.py` under `src/frameworks_and_drivers/integrations/`).
+
+1. Copy the example env file to `.env` in the **repository root** (next to `pyproject.toml`):
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   On Windows: `copy .env.example .env` in cmd, or `Copy-Item .env.example .env` in PowerShell.
+
+2. Edit `.env` and replace the placeholder values. **Do not commit `.env`** (it is listed in `.gitignore`).
+
+3. **CLI**, **web**, and **Qt** call `load_dotenv()` on startup, so variables from `.env` are loaded automatically when that file exists.
+
+Variable summary (comments in `.env.example` explain each value):
+
+| Variable | Used for |
+| --- | --- |
+| `SHOTGUN_SERVER_PATH`, `SHOTGUN_SCRIPT_NAME`, `SHOTGUN_API_KEY` | ShotGrid / `shotgun_api3` |
+| `FTRACK_SERVER_URL`, `FTRACK_API_USER`, `FTRACK_API_KEY` | ftrack |
+| `KITSU_HOST`, `KITSU_EMAIL`, `KITSU_PASSWORD` | Kitsu (gazu) |
+| `TRACKING_BACKEND`, `FAKE_VENDOR` | Optional defaults when not using `--source` / `?source=` |
+
+Install vendor SDKs as needed: `pip install -e ".[shotgun]"` (or `[ftrack]`, `[kitsu]`, `[all]`).
 
 ## CLI
 
-```bash
-shots-cli list PROJECT_ID --tracking fake --fake-vendor shotgun
-```
+The first word after `shots-cli` must be the subcommand **`list`** (then the project id). If you run `shots-cli MY_PROJECT ...` without `list`, Typer reports `No such command 'MY_PROJECT'`.
+
+**Source** is the same across CLI, web, and Qt: use `--source` / `-s` with one of the ids below (hyphens are accepted, e.g. `fake-shotgun`). When `--source` is set, `--tracking` / `--fake-vendor` are ignored.
+
+| `source` | Seeded project (fake only) | Example |
+| --- | --- | --- |
+| `fake_shotgun` | `demo` | `shots-cli list demo --source fake_shotgun` |
+| `fake_ftrack` | `ftrack-demo` | `shots-cli list ftrack-demo --source fake_ftrack` |
+| `fake_kitsu` | `kitsu-demo` | `shots-cli list kitsu-demo --source fake_kitsu` |
+| `shotgun` | — (live API) | `shots-cli list REAL_ID --source shotgun` |
+| `ftrack` | — | `shots-cli list REAL_ID --source ftrack` |
+| `kitsu` | — | `shots-cli list REAL_ID --source kitsu` |
+
+Legacy: `shots-cli list PROJECT_ID --tracking fake --fake-vendor shotgun` still works when `--source` is omitted.
+
+Other project ids on fakes still succeed but return no rows. Use `shots-cli --help` and `shots-cli list --help` for options.
 
 ## Web
 
 ```bash
-python -m uvicorn framework_and_drivers.web.app:app --reload
+python -m uvicorn frameworks_and_drivers.user_interfaces.web.app:app --reload
 ```
 
-Open `http://127.0.0.1:8000/shots?project_id=demo`.
+Use the same **`source`** query parameter as the CLI `--source` (e.g. `http://127.0.0.1:8000/shots?project_id=demo&source=fake_shotgun`). If `source` is omitted, `tracking` and `fake_vendor` behave as before. Unknown `source` returns **422** with an `error` message.
 
 ## Qt
 
 ```bash
 pip install -e ".[qt]"
-python -m framework_and_drivers.qt.main
+python -m frameworks_and_drivers.user_interfaces.qt.main
 ```
+
+The **Source** dropdown uses the same catalog as CLI `--source` and web `source=` (see table above). Pick a source, enter the project id, then **Load shots**.
 
 ## Tests
 
-See `tests/use_cases` and `tests/interface_adapters`. Optional real API tests: `pytest -m integration`.
+Unit tests live under `tests/unit_tests/` (aligned with the template’s `unit_tests` layout). Optional real API tests: `pytest -m integration`.

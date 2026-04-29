@@ -1,0 +1,23 @@
+from __future__ import annotations
+
+from business_entities import ProjectId
+
+from framework_and_drivers.integrations.fake._memory_store import InMemoryShotStore
+from interface_adapters.outward_interfaces.ftrack_interface import FtrackDataPort
+from interface_adapters.outward_interfaces.raw_shot_row import RawShotRow
+
+
+class FakeFtrackClient(FtrackDataPort):
+    def __init__(
+        self,
+        store: InMemoryShotStore | None = None,
+        *,
+        initial: dict[str, list[RawShotRow]] | None = None,
+    ) -> None:
+        self._store = store or InMemoryShotStore(initial)
+
+    def seed(self, project_id: str, rows: list[RawShotRow]) -> None:
+        self._store.seed(project_id, rows)
+
+    def find_shots_for_project(self, project_id: ProjectId) -> list[RawShotRow]:
+        return self._store.find(project_id)

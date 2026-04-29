@@ -1,0 +1,1 @@
+"""Vendor integrations and fakes."""

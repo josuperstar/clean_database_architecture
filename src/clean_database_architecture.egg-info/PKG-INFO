@@ -1,0 +1,163 @@
+Metadata-Version: 2.4
+Name: clean-database-architecture
+Version: 0.1.0
+Summary: Clean Architecture demo: list shots across ShotGrid, ftrack, Kitsu with CLI, web, and Qt.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: typer>=0.12
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: pydantic>=2.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Provides-Extra: qt
+Requires-Dist: PySide6>=6.6; extra == "qt"
+Provides-Extra: shotgun
+Requires-Dist: shotgun-api3>=3.4; extra == "shotgun"
+Provides-Extra: ftrack
+Requires-Dist: ftrack-api>=2.8; extra == "ftrack"
+Provides-Extra: kitsu
+Requires-Dist: gazu>=0.10; extra == "kitsu"
+Provides-Extra: all
+Requires-Dist: PySide6>=6.6; extra == "all"
+Requires-Dist: shotgun-api3>=3.4; extra == "all"
+Requires-Dist: ftrack-api>=2.8; extra == "all"
+Requires-Dist: gazu>=0.10; extra == "all"
+
+# Clean Architecture: multi-tracker shots listing
+
+Python demo of Clean Architecture with four packages under `src/`: `business_entities`, `use_cases`, `interface_adapters`, and `framework_and_drivers`.
+
+Use cases do not import frameworks or vendor SDKs. SDK calls live under `framework_and_drivers/integrations/`. Interface adapters depend on Protocols; fakes and real clients implement those Protocols.
+
+## Features
+
+- List shots for a project; presenter sorts by `Shot.name` and maps status to ColorHint: in progress blue, ready to start green, done gray, unknown amber.
+- ViewModels are UI-agnostic; CLI/Web/Qt sinks render them.
+- FakeShotgunClient, FakeFtrackClient, FakeKitsuClient support tests without network.
+
+## Setup
+
+**PowerShell (Windows):**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+python -m pytest
+```
+
+If **`Activate.ps1` is blocked** (execution policy), pick one:
+
+- **One session only:** `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` then run `Activate.ps1` again.
+- **Current user (recommended once):** `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+- **Avoid `.ps1`:** in **cmd.exe** run `.venv\Scripts\activate.bat` instead of `Activate.ps1`.
+- **Skip activate:** use `.venv\Scripts\python.exe -m pytest` (full path to venv Python).
+
+If **`pytest` fails with null bytes** in `tests/*.py`, your test files were saved as UTF-16. Run `python tools\fix_encoding.py` (it fixes `src/` and `tests/` too), then run pytest again.
+
+Optional: `python -m pip install -e ".[qt]"` for Qt; `".[shotgun]"`, `".[ftrack]"`, `".[kitsu]"` for vendors; `".[all]"` for all.
+
+### If `pip install -e` fails with `tomllib.TOMLDecodeError` on `pyproject.toml`
+
+The file on disk is almost certainly **UTF-16** (or otherwise not UTF-8).
+
+From the repo root (needs a working `python`):
+
+```powershell
+python tools\fix_encoding.py
+python -m pip install -e ".[dev]"
+```
+
+That script also rewrites **`src/**/*.py`** and **`tests/**/*.py`** to UTF-8 (fixes `SyntaxError: null bytes` after bad editor encoding).
+
+Or double-click / run **`tools\fix_encoding.cmd`**.
+
+Then in **Cursor**: set default encoding to UTF-8 (**Settings**, search **encoding**, **Files: Encoding** = `utf8`) so new saves are not UTF-16.
+
+**Or** open `pyproject.toml` -> status bar **encoding** -> **Save with Encoding** -> **UTF-8**.
+
+### If `pip install -e` fails with `UnicodeDecodeError` on `README.md`
+
+`README.md` must be **UTF-8** (not Windows-1252 / cp1252 smart quotes). In Cursor: open `README.md` -> **Save with Encoding** -> **UTF-8**.
+
+Or run `python tools\fix_encoding.py` (it also repairs `README.md`, including cp1252 fallback when UTF-8 is invalid).
+
+### Windows: "Python est introuvable" (still, after installing Python)
+
+That text almost always means the command **`python` is still the Microsoft Store shim**, not the interpreter you installed.
+
+**Step A - See what Windows runs**
+
+In PowerShell:
+
+```powershell
+where.exe python
+```
+
+- If the **first** line is like `...\WindowsApps\python.exe`, that entry **wins** and will keep opening the Store / failing.
+- You want the **first** line to be something like  
+  `C:\Users\Jonathan\AppData\Local\Programs\Python\Python3xx\python.exe`  
+  (or under `C:\Program Files\Python3xx\`).
+
+**Step B - Turn off the Store aliases (do this even if you added Python to PATH)**
+
+1. Settings -> Apps -> Advanced app settings -> **App execution aliases**.
+2. Set **python.exe** and **python3.exe** linked to the **Microsoft Store** to **Off**.
+
+Close **all** PowerShell / Terminal windows, open a **new** one, run `where.exe python` again.
+
+**Step C - If `python` still fails, call the real exe by path**
+
+List typical install folders (adjust the folder name if yours differs):
+
+```powershell
+Get-ChildItem "$env:LOCALAPPDATA\Programs\Python" -ErrorAction SilentlyContinue
+```
+
+Then create the venv with the full path (example for 3.12):
+
+```powershell
+cd c:\Users\Jonathan\clean_database_architecture
+& "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe" -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+python -m pip install -e ".[dev]"
+python -m pytest
+```
+
+After activation, `python` inside the venv is the venv interpreter, so commands below `Activate.ps1` work.
+
+**Step D - Fix PATH for the future (optional)**
+
+- Re-run the **python.org** installer -> **Modify** -> **Next** -> enable **Add Python to environment variables** -> finish, **or**
+- Run `py -0p` if the **py** launcher works; if it does, you can use `py -3 -m venv .venv` instead of `python -m venv`.
+
+If `.\.venv\Scripts\Activate.ps1` is missing, the venv was never created - complete Step B/C first, then run `python ... -m venv .venv` again.
+
+Copy `.env.example` to `.env` for real backends.
+
+## CLI
+
+```bash
+shots-cli list PROJECT_ID --tracking fake --fake-vendor shotgun
+```
+
+## Web
+
+```bash
+python -m uvicorn framework_and_drivers.web.app:app --reload
+```
+
+Open `http://127.0.0.1:8000/shots?project_id=demo`.
+
+## Qt
+
+```bash
+pip install -e ".[qt]"
+python -m framework_and_drivers.qt.main
+```
+
+## Tests
+
+See `tests/use_cases` and `tests/interface_adapters`. Optional real API tests: `pytest -m integration`.

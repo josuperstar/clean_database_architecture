@@ -30,13 +30,13 @@ all = [
 ]
 
 [project.scripts]
-shots-cli = "framework_and_drivers.cli.main:run_cli"
+shots-cli = "frameworks_and_drivers.user_interfaces.cli.main:run_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/unit_tests"]
 pythonpath = ["src"]
 markers = [
     "integration: hits real vendor APIs (requires credentials)",

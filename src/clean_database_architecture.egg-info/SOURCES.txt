@@ -3,7 +3,6 @@ pyproject.toml
 src/business_entities/__init__.py
 src/business_entities/project.py
 src/business_entities/shot.py
-src/business_entities/shot_rename_policy.py
 src/clean_database_architecture.egg-info/PKG-INFO
 src/clean_database_architecture.egg-info/SOURCES.txt
 src/clean_database_architecture.egg-info/dependency_links.txt
@@ -12,6 +11,7 @@ src/clean_database_architecture.egg-info/requires.txt
 src/clean_database_architecture.egg-info/top_level.txt
 src/framework_and_drivers/__init__.py
 src/framework_and_drivers/cli/__init__.py
+src/framework_and_drivers/cli/interactive_rename.py
 src/framework_and_drivers/cli/main.py
 src/framework_and_drivers/composition/__init__.py
 src/framework_and_drivers/composition/factory.py
@@ -30,8 +30,11 @@ src/framework_and_drivers/integrations/shotgun/shotgun_client.py
 src/framework_and_drivers/qt/__init__.py
 src/framework_and_drivers/qt/main.py
 src/framework_and_drivers/view_sinks/__init__.py
+src/framework_and_drivers/view_sinks/cli_shots_capture_sink.py
 src/framework_and_drivers/view_sinks/cli_shots_sink.py
 src/framework_and_drivers/view_sinks/qt_shots_sink.py
+src/framework_and_drivers/view_sinks/qt_shots_table_sink.py
+src/framework_and_drivers/view_sinks/qt_update_shot_name_sink.py
 src/framework_and_drivers/view_sinks/web_shots_sink.py
 src/framework_and_drivers/web/__init__.py
 src/framework_and_drivers/web/__main__.py
@@ -51,6 +54,7 @@ src/interface_adapters/presenters/__init__.py
 src/interface_adapters/presenters/list_shots_presenter.py
 src/interface_adapters/presenters/update_shot_name_presenter.py
 src/interface_adapters/repositories/__init__.py
+src/interface_adapters/repositories/_canonical_shot_label.py
 src/interface_adapters/repositories/_status_mapping.py
 src/interface_adapters/repositories/ftrack_shot_repository.py
 src/interface_adapters/repositories/kitsu_shot_repository.py

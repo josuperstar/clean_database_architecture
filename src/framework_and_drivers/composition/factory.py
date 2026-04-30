@@ -25,11 +25,12 @@ from framework_and_drivers.integrations.fake.fake_shotgun_client import FakeShot
 from framework_and_drivers.integrations.ftrack.ftrack_client import FtrackClient
 from framework_and_drivers.integrations.kitsu.kitsu_client import KitsuClient
 from framework_and_drivers.integrations.shotgun.shotgun_client import ShotgunClient
-from framework_and_drivers.view_sinks.cli_shots_sink import CliShotsViewSink
-from framework_and_drivers.view_sinks.qt_shots_sink import QtShotsViewSink
-from framework_and_drivers.view_sinks.qt_shots_table_sink import QtShotsTableSink
-from framework_and_drivers.view_sinks.qt_update_shot_name_sink import QtUpdateShotNameSink
-from framework_and_drivers.view_sinks.web_shots_sink import WebPresentationResult, WebShotsViewSink
+from framework_and_drivers.cli.cli_shots_capture_sink import CliShotsCaptureSink
+from framework_and_drivers.cli.cli_shots_sink import CliShotsViewSink
+from framework_and_drivers.qt.qt_shots_sink import QtShotsViewSink
+from framework_and_drivers.qt.qt_shots_table_sink import QtShotsTableSink
+from framework_and_drivers.qt.qt_update_shot_name_sink import QtUpdateShotNameSink
+from framework_and_drivers.web.web_shots_sink import WebPresentationResult, WebShotsViewSink
 
 
 def _tracking_from_env() -> str:
@@ -158,6 +159,19 @@ def build_list_shots_controller(
     return ListShotsController(use_case)
 
 
+def build_list_shots_controller_cli_capture(
+    *,
+    tracking: str | None = None,
+    fake_vendor: str | None = None,
+) -> tuple[ListShotsController, CliShotsCaptureSink]:
+    """List shots without printing; read ``sink.last_vm`` / ``sink.last_error`` after ``handle``."""
+    repo = _build_shot_repository(tracking=tracking, fake_vendor=fake_vendor)
+    sink = CliShotsCaptureSink()
+    presenter = ListShotsPresenter(sink=sink)
+    use_case = ListShotsForProject(repo, presenter)
+    return ListShotsController(use_case), sink
+
+
 def build_list_shots_controller_qt(
     *,
     shot_list_widget: object,
@@ -220,6 +234,7 @@ def build_update_shot_name_controller_qt(
 
 __all__ = [
     "build_list_shots_controller",
+    "build_list_shots_controller_cli_capture",
     "build_list_shots_controller_qt",
     "build_update_shot_name_controller",
     "build_update_shot_name_controller_qt",

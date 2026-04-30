@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typer
 
+from framework_and_drivers.cli.interactive_rename import run_interactive_rename
 from framework_and_drivers.composition.factory import (
     build_list_shots_controller,
     build_update_shot_name_controller,
@@ -11,7 +12,7 @@ from interface_adapters.controllers.request_models import (
     UpdateShotNameRequestModel,
 )
 
-app = typer.Typer(help="List and rename shots (Clean Architecture demo).")
+app = typer.Typer(help="List and rename shots (Clean Architecture demo). Use `interactive` for guided prompts.")
 
 
 @app.callback()
@@ -40,6 +41,12 @@ def list_shots(
         fake_vendor=fake_vendor,
     )
     controller.handle(ListShotsRequestModel(project_id=project_id))
+
+
+@app.command("interactive")
+def interactive() -> None:
+    """Choose source and project from lists, pick a shot, then enter the new name."""
+    run_interactive_rename()
 
 
 @app.command("rename")

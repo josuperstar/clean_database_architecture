@@ -2,51 +2,51 @@ from __future__ import annotations
 
 import pytest
 
-from business_entities import (
-    Shot,
-    ShotStatus,
-    assert_shot_display_name_matches_nomenclature,
-    infer_shot_name_first_token_from_shot,
-)
+from business_entities import Shot, ShotStatus
 
 
 def test_nomenclature_accepts_sequence_and_digits() -> None:
-    assert_shot_display_name_matches_nomenclature("SEQ01", "SEQ01_01")
-    assert_shot_display_name_matches_nomenclature("ACME", "ACME_999")
+    Shot.assert_display_name_matches_nomenclature("SEQ01", "SEQ01_01")
+    Shot.assert_display_name_matches_nomenclature("ACME", "ACME_999")
 
 
 def test_nomenclature_rejects_wrong_first_token() -> None:
     with pytest.raises(ValueError, match="must match"):
-        assert_shot_display_name_matches_nomenclature("SEQ01", "OTHER_01")
+        Shot.assert_display_name_matches_nomenclature("SEQ01", "OTHER_01")
 
 
 def test_nomenclature_rejects_non_numeric_suffix() -> None:
     with pytest.raises(ValueError, match="must match"):
-        assert_shot_display_name_matches_nomenclature("SEQ01", "SEQ01_1a")
+        Shot.assert_display_name_matches_nomenclature("SEQ01", "SEQ01_1a")
 
 
 def test_nomenclature_rejects_empty_first_token() -> None:
     with pytest.raises(ValueError, match="First name segment"):
-        assert_shot_display_name_matches_nomenclature("", "ANY_01")
+        Shot.assert_display_name_matches_nomenclature("", "ANY_01")
 
 
 def test_nomenclature_first_token_may_include_regex_special_chars() -> None:
-    assert_shot_display_name_matches_nomenclature("MY.SEQ", "MY.SEQ_1")
+    Shot.assert_display_name_matches_nomenclature("MY.SEQ", "MY.SEQ_1")
 
 
-def test_infer_first_token_from_sequence() -> None:
+def test_infer_rename_first_token_from_sequence() -> None:
     s = Shot("1", "SEQ01_01", "SEQ01_01", "SEQ01", ShotStatus.READY_TO_START)
-    assert infer_shot_name_first_token_from_shot(s) == "SEQ01"
+    assert s.infer_rename_first_token() == "SEQ01"
 
 
 def test_infer_strips_sequence_whitespace() -> None:
     s = Shot("1", "X", "X", "  Anim  ", ShotStatus.READY_TO_START)
-    assert infer_shot_name_first_token_from_shot(s) == "Anim"
+    assert s.infer_rename_first_token() == "Anim"
 
 
 def test_infer_returns_none_when_sequence_missing() -> None:
     s = Shot("1", "X", "X", None, ShotStatus.READY_TO_START)
-    assert infer_shot_name_first_token_from_shot(s) is None
+    assert s.infer_rename_first_token() is None
+
+
+def test_resolve_override_wins_over_sequence() -> None:
+    s = Shot("1", "SEQ01_01", "SEQ01_01", "SEQ01", ShotStatus.READY_TO_START)
+    assert s.resolve_rename_first_token("ZZZ") == "ZZZ"
 
 
 def test_shot_can_rename_by_status() -> None:

@@ -8,7 +8,7 @@ from framework_and_drivers.composition.factory import (
     build_list_shots_controller,
     build_update_shot_name_controller_web,
 )
-from framework_and_drivers.view_sinks.web_shots_sink import WebPresentationResult
+from framework_and_drivers.web.web_shots_sink import WebPresentationResult
 from interface_adapters.controllers.request_models import ListShotsRequestModel, UpdateShotNameRequestModel
 from interface_adapters.presenters.update_shot_name_presenter import WebRenamePresentationResult
 

@@ -24,7 +24,7 @@ class QtShotsViewSink:
         for row in view_model.rows:
             color = _HTML.get(row.color_hint, _HTML[ColorHint.NEUTRAL])
             parts.append(
-                f"<li style='color:{color}'><b>{row.name}</b> ({row.code}) — {row.status_label}</li>"
+                f"<li style='color:{color}'><b>{row.name}</b> — {row.status_label}</li>"
             )
         parts.append("</ul>")
         self._text.setHtml("".join(parts))

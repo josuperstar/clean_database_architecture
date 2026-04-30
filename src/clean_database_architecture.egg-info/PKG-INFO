@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
 Name: clean-database-architecture
 Version: 0.1.0
-Summary: Clean Architecture demo: list shots across ShotGrid, ftrack, Kitsu with CLI, web, and Qt.
+Summary: Clean Architecture demo: list and rename shots across ShotGrid, ftrack, Kitsu (CLI, web, Qt).
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 Requires-Dist: typer>=0.12
@@ -10,6 +10,7 @@ Requires-Dist: uvicorn[standard]>=0.30
 Requires-Dist: pydantic>=2.0
 Provides-Extra: dev
 Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: httpx>=0.27; extra == "dev"
 Provides-Extra: qt
 Requires-Dist: PySide6>=6.6; extra == "qt"
 Provides-Extra: shotgun
@@ -33,6 +34,7 @@ Use cases do not import frameworks or vendor SDKs. SDK calls live under `framewo
 ## Features
 
 - List shots for a project; presenter sorts by `Shot.name` and maps status to ColorHint: in progress blue, ready to start green, done gray, unknown amber.
+- **Rename shot** use case: new name must follow `<project_code>_<digits>`; renames are rejected when status is **in progress** or **done** (see CLI and Web below).
 - ViewModels are UI-agnostic; CLI/Web/Qt sinks render them.
 - FakeShotgunClient, FakeFtrackClient, FakeKitsuClient support tests without network.
 
@@ -139,9 +141,36 @@ Copy `.env.example` to `.env` for real backends.
 
 ## CLI
 
+The first word after `shots-cli` must be the subcommand **`list`** (then the project id). If you run `shots-cli MY_PROJECT ...` without `list`, Typer reports `No such command 'MY_PROJECT'`.
+
 ```bash
 shots-cli list PROJECT_ID --tracking fake --fake-vendor shotgun
 ```
+
+With `--tracking fake`, each vendor's in-memory store is seeded under a **different** project id (so you can tell which backend you hit):
+
+| `fake-vendor` | Example project id | CLI |
+| --- | --- | --- |
+| `shotgun` (default) | `demo` | `shots-cli list demo --tracking fake --fake-vendor shotgun` |
+| `ftrack` | `ftrack-demo` | `shots-cli list ftrack-demo --tracking fake --fake-vendor ftrack` |
+| `kitsu` | `kitsu-demo` | `shots-cli list kitsu-demo --tracking fake --fake-vendor kitsu` |
+
+Other project ids still succeed but return no rows. Use `shots-cli --help` and `shots-cli list --help` for options.
+
+### Rename shot (`rename`)
+
+Renames a shot's display name after **business rules** pass:
+
+1. **Nomenclature:** the new name must be `<project_code>_<digits>`, where `--project-code` is alphanumeric only (e.g. `INF` → valid names `INF_01`, `INF_42`).
+2. **Status:** renaming is **not** allowed when the shot is **in progress** or **done** (other statuses, e.g. ready-to-start, are allowed).
+
+Use the same `--tracking` / `--fake-vendor` flags as for `list`. Example (fake ShotGrid seed: project `demo`, shot id `3` is ready-to-start):
+
+```bash
+shots-cli rename demo 3 INF_99 --project-code INF --tracking fake --fake-vendor shotgun
+```
+
+Live **ShotGrid** rename updates the `description` field. Live **ftrack** / **Kitsu** rename is not implemented in this demo (use `fake` to exercise the flow).
 
 ## Web
 
@@ -149,7 +178,20 @@ shots-cli list PROJECT_ID --tracking fake --fake-vendor shotgun
 python -m uvicorn framework_and_drivers.web.app:app --reload
 ```
 
-Open `http://127.0.0.1:8000/shots?project_id=demo`.
+Open e.g. `http://127.0.0.1:8000/shots?project_id=demo&tracking=fake` (ShotGrid fake). For the other fakes use the same project ids as in the table with `tracking=fake` and `fake_vendor=ftrack` or `fake_vendor=kitsu`.
+
+**Rename** — `POST /shots/rename?tracking=fake&fake_vendor=shotgun` with JSON body:
+
+```json
+{
+  "project_id": "demo",
+  "shot_id": "3",
+  "new_name": "INF_99",
+  "project_code": "INF"
+}
+```
+
+Same business rules as `shots-cli rename`. On success the response is `{"ok": true, "message": "..."}`; on rule or lookup failure, `400` with `{"error": "..."}`.
 
 ## Qt
 
@@ -160,4 +202,4 @@ python -m framework_and_drivers.qt.main
 
 ## Tests
 
-See `tests/use_cases` and `tests/interface_adapters`. Optional real API tests: `pytest -m integration`.
+See `tests/use_cases`, `tests/interface_adapters`, and `tests/business_entities`. Optional real API tests: `pytest -m integration`.

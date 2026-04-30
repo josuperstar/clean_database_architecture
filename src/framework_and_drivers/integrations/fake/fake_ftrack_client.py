@@ -21,3 +21,6 @@ class FakeFtrackClient(FtrackDataPort):
 
     def find_shots_for_project(self, project_id: ProjectId) -> list[RawShotRow]:
         return self._store.find(project_id)
+
+    def update_shot_name(self, project_id: ProjectId, shot_external_id: str, new_name: str) -> None:
+        self._store.update_shot_name(project_id, shot_external_id, new_name)

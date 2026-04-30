@@ -58,3 +58,8 @@ class FtrackClient(FtrackDataPort):
                 )
             )
         return rows
+
+    def update_shot_name(self, project_id: ProjectId, shot_external_id: str, new_name: str) -> None:
+        raise RuntimeError(
+            "Live ftrack shot rename is not implemented in this demo; use tracking=fake."
+        )

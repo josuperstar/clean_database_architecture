@@ -22,7 +22,7 @@ class CliShotsViewSink:
         print(f"Project: {view_model.project_id}", file=out)
         for row in view_model.rows:
             color = self._ANSI.get(row.color_hint, self._RESET)
-            line = f"{color}{row.name} ({row.code}) — {row.status_label}{self._RESET}"
+            line = f"{color}{row.name} — {row.status_label}{self._RESET}"
             print(line, file=out)
 
     def render_error(self, message: str) -> None:

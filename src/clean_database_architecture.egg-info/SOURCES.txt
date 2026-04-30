@@ -3,6 +3,7 @@ pyproject.toml
 src/business_entities/__init__.py
 src/business_entities/project.py
 src/business_entities/shot.py
+src/business_entities/shot_rename_policy.py
 src/clean_database_architecture.egg-info/PKG-INFO
 src/clean_database_architecture.egg-info/SOURCES.txt
 src/clean_database_architecture.egg-info/dependency_links.txt
@@ -39,6 +40,7 @@ src/interface_adapters/__init__.py
 src/interface_adapters/controllers/__init__.py
 src/interface_adapters/controllers/list_shots_controller.py
 src/interface_adapters/controllers/request_models.py
+src/interface_adapters/controllers/update_shot_name_controller.py
 src/interface_adapters/outward_interfaces/__init__.py
 src/interface_adapters/outward_interfaces/ftrack_interface.py
 src/interface_adapters/outward_interfaces/kitsu_interface.py
@@ -47,6 +49,7 @@ src/interface_adapters/outward_interfaces/shotgun_interface.py
 src/interface_adapters/outward_interfaces/shots_view_sink.py
 src/interface_adapters/presenters/__init__.py
 src/interface_adapters/presenters/list_shots_presenter.py
+src/interface_adapters/presenters/update_shot_name_presenter.py
 src/interface_adapters/repositories/__init__.py
 src/interface_adapters/repositories/_status_mapping.py
 src/interface_adapters/repositories/ftrack_shot_repository.py
@@ -61,3 +64,7 @@ src/use_cases/list_shots/list_shots_for_project.py
 src/use_cases/ports/__init__.py
 src/use_cases/ports/list_shots_output.py
 src/use_cases/ports/repositories.py
+src/use_cases/ports/update_shot_name_output.py
+src/use_cases/update_shot_name/__init__.py
+src/use_cases/update_shot_name/input.py
+src/use_cases/update_shot_name/update_shot_name.py

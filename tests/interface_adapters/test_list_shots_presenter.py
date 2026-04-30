@@ -21,9 +21,9 @@ def test_presenter_sorts_alphabetically_and_maps_colors() -> None:
     sink = RecordingSink()
     presenter = ListShotsPresenter(sink=sink)
     shots = [
-        Shot(id="2", name="Bravo", code="BRV", sequence="SQ01", status=ShotStatus.IN_PROGRESS),
-        Shot(id="1", name="Alpha", code="ALP", sequence=None, status=ShotStatus.READY_TO_START),
-        Shot(id="3", name="Charlie", code="CH", sequence=None, status=ShotStatus.DONE),
+        Shot(id="2", name="Bravo", code="Bravo", sequence="SQ01", status=ShotStatus.IN_PROGRESS),
+        Shot(id="1", name="Alpha", code="Alpha", sequence=None, status=ShotStatus.READY_TO_START),
+        Shot(id="3", name="Charlie", code="Charlie", sequence=None, status=ShotStatus.DONE),
     ]
     presenter.present_shots("proj-x", shots)
     assert sink.vm is not None

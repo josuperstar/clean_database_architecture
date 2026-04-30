@@ -23,7 +23,7 @@ class ShotgunClient(ShotgunDataPort):
         self._script_name = script_name or os.environ.get("SHOTGUN_SCRIPT_NAME", "")
         self._api_key = api_key or os.environ.get("SHOTGUN_API_KEY", "")
 
-    def find_shots_for_project(self, project_id: ProjectId) -> list[RawShotRow]:
+    def _shotgun(self) -> Any:
         try:
             import shotgun_api3  # type: ignore[import-not-found]
         except ImportError as exc:  # pragma: no cover - environment dependent
@@ -36,11 +36,14 @@ class ShotgunClient(ShotgunDataPort):
                 "ShotGrid credentials missing. Set SHOTGUN_SERVER_PATH, SHOTGUN_SCRIPT_NAME, SHOTGUN_API_KEY."
             )
 
-        sg: Any = shotgun_api3.Shotgun(
+        return shotgun_api3.Shotgun(
             self._server_path,
             script_name=self._script_name,
             api_key=self._api_key,
         )
+
+    def find_shots_for_project(self, project_id: ProjectId) -> list[RawShotRow]:
+        sg = self._shotgun()
         pid = str(project_id)
         try:
             pid_int = int(pid)
@@ -65,3 +68,14 @@ class ShotgunClient(ShotgunDataPort):
                 )
             )
         return rows
+
+    def update_shot_name(self, project_id: ProjectId, shot_external_id: str, new_name: str) -> None:
+        rows = self.find_shots_for_project(project_id)
+        if not any(r.external_id == shot_external_id for r in rows):
+            raise LookupError(shot_external_id)
+        sg = self._shotgun()
+        try:
+            sid = int(shot_external_id)
+        except ValueError as exc:
+            raise LookupError(shot_external_id) from exc
+        sg.update("Shot", sid, {"description": new_name})

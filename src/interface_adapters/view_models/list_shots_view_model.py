@@ -23,7 +23,6 @@ class FontEmphasis(str, Enum):
 class ShotRowViewModel:
     shot_id: str
     name: str
-    code: str
     sequence: str | None
     status_label: str
     color_hint: ColorHint

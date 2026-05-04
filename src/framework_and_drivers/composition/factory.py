@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 
+from framework_and_drivers.composition import config_bootstrap
 from interface_adapters.controllers.list_shots_controller import ListShotsController
 from interface_adapters.controllers.update_shot_name_controller import UpdateShotNameController
 from interface_adapters.presenters.list_shots_presenter import ListShotsPresenter
@@ -31,6 +32,16 @@ from framework_and_drivers.qt.qt_shots_sink import QtShotsViewSink
 from framework_and_drivers.qt.qt_shots_table_sink import QtShotsTableSink
 from framework_and_drivers.qt.qt_update_shot_name_sink import QtUpdateShotNameSink
 from framework_and_drivers.web.web_shots_sink import WebPresentationResult, WebShotsViewSink
+
+_CONFIG_BOOTSTRAP_DONE = False
+
+
+def _ensure_config_bootstrapped() -> None:
+    """Apply ``config.ini`` once (``setdefault``); existing env wins."""
+    global _CONFIG_BOOTSTRAP_DONE
+    if not _CONFIG_BOOTSTRAP_DONE:
+        config_bootstrap.bootstrap_config_from_ini()
+        _CONFIG_BOOTSTRAP_DONE = True
 
 
 def _tracking_from_env() -> str:
@@ -117,6 +128,7 @@ def _build_shot_repository(
     tracking: str | None = None,
     fake_vendor: str | None = None,
 ) -> ShotRepository:
+    _ensure_config_bootstrapped()
     t = (tracking or _tracking_from_env()).lower()
     fv = (fake_vendor or _fake_vendor_from_env()).lower()
 

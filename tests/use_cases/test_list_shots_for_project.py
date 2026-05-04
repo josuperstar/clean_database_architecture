@@ -14,6 +14,12 @@ class FakeShotRepository:
         self.calls.append(str(project_id))
         return list(self._shots)
 
+    def get_shot(self, project_id: ProjectId, shot_id: str) -> Shot | None:
+        return next((s for s in self._shots if s.id == shot_id), None)
+
+    def update_shot_name(self, project_id: ProjectId, shot_id: str, new_name: str) -> None:
+        pass
+
 
 class SpyOutput:
     def __init__(self) -> None:
@@ -29,7 +35,7 @@ class SpyOutput:
 
 def test_execute_lists_shots() -> None:
     shots = [
-        Shot(id="1", name="Zebra", code="ZBR", sequence=None, status=ShotStatus.DONE),
+        Shot(id="1", name="Zebra", code="Zebra", sequence=None, status=ShotStatus.DONE),
     ]
     repo = FakeShotRepository(shots)
     out = SpyOutput()
@@ -55,6 +61,12 @@ def test_repository_exception_surfaces_as_error() -> None:
     class BoomRepo:
         def list_shots(self, project_id: ProjectId) -> list[Shot]:
             raise RuntimeError("network down")
+
+        def get_shot(self, project_id: ProjectId, shot_id: str) -> Shot | None:
+            return None
+
+        def update_shot_name(self, project_id: ProjectId, shot_id: str, new_name: str) -> None:
+            pass
 
     out = SpyOutput()
     uc = ListShotsForProject(BoomRepo(), out)  # type: ignore[arg-type]

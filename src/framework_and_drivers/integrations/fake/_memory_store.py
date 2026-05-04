@@ -18,3 +18,20 @@ class InMemoryShotStore:
 
     def find(self, project_id: ProjectId) -> list[RawShotRow]:
         return list(self._by_project.get(str(project_id), []))
+
+    def update_shot_name(self, project_id: ProjectId, shot_id: str, new_name: str) -> None:
+        pid = str(project_id)
+        rows = self._by_project.get(pid)
+        if rows is None:
+            raise LookupError(pid)
+        for i, row in enumerate(rows):
+            if row.external_id == shot_id:
+                rows[i] = RawShotRow(
+                    row.external_id,
+                    new_name,
+                    new_name,
+                    row.sequence,
+                    row.status_vendor,
+                )
+                return
+        raise LookupError(shot_id)

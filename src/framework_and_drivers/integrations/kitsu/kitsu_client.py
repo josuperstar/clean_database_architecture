@@ -27,7 +27,9 @@ class KitsuClient(KitsuDataPort):
             import gazu  # type: ignore[import-not-found]
         except ImportError as exc:  # pragma: no cover
             raise RuntimeError(
-                "gazu is not installed. Install with: pip install 'clean-database-architecture[kitsu]'"
+                "gazu is not installed. Install the optional extra, e.g. "
+                "from this repo: pip install -e '.[kitsu]' — or from PyPI: "
+                "pip install 'clean-database-architecture[kitsu]'"
             ) from exc
 
         if not (self._host and self._email and self._password):
@@ -50,3 +52,8 @@ class KitsuClient(KitsuDataPort):
                 )
             )
         return rows
+
+    def update_shot_name(self, project_id: ProjectId, shot_external_id: str, new_name: str) -> None:
+        raise RuntimeError(
+            "Live Kitsu shot rename is not implemented in this demo; use tracking=fake."
+        )

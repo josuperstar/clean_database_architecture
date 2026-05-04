@@ -43,7 +43,6 @@ class ListShotsPresenter(ListShotsOutputPort):
                 ShotRowViewModel(
                     shot_id=shot.id,
                     name=shot.name,
-                    code=shot.code,
                     sequence=shot.sequence,
                     status_label=_status_label(shot.status),
                     color_hint=_color_for_status(shot.status),

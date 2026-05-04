@@ -28,7 +28,7 @@ def normalize_vendor_status(raw: str, *, flavor: str) -> ShotStatus:
         "not started",
     }
     done = {
-        "fin",
+        "fin",  # ShotGrid / Shotgun status list short code (display often "Final")
         "done",
         "complete",
         "completed",

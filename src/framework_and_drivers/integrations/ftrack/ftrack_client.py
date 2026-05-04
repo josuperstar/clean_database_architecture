@@ -27,7 +27,9 @@ class FtrackClient(FtrackDataPort):
             import ftrack_api  # type: ignore[import-not-found]
         except ImportError as exc:  # pragma: no cover
             raise RuntimeError(
-                "ftrack_api is not installed. Install with: pip install 'clean-database-architecture[ftrack]'"
+                "ftrack_api is not installed. Install the optional extra, e.g. "
+                "from this repo: pip install -e '.[ftrack]' — or from PyPI: "
+                "pip install 'clean-database-architecture[ftrack]'"
             ) from exc
 
         if not (self._server_url and self._api_key and self._api_user):

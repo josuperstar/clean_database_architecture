@@ -1,14 +1,7 @@
 from __future__ import annotations
 
+from interface_adapters.view_models.color_hint_theme import COLOR_HINT_HEX
 from interface_adapters.view_models.list_shots_view_model import ColorHint, ListShotsViewModel
-
-_HTML = {
-    ColorHint.BLUE: "#2563eb",
-    ColorHint.GREEN: "#16a34a",
-    ColorHint.GRAY: "#6b7280",
-    ColorHint.AMBER: "#d97706",
-    ColorHint.NEUTRAL: "#111827",
-}
 
 
 class QtShotsViewSink:
@@ -22,7 +15,7 @@ class QtShotsViewSink:
     def render(self, view_model: ListShotsViewModel) -> None:
         parts: list[str] = [f"<h3>Project {view_model.project_id}</h3><ul>"]
         for row in view_model.rows:
-            color = _HTML.get(row.color_hint, _HTML[ColorHint.NEUTRAL])
+            color = COLOR_HINT_HEX.get(row.color_hint, COLOR_HINT_HEX[ColorHint.NEUTRAL])
             parts.append(
                 f"<li style='color:{color}'><b>{row.name}</b> — {row.status_label}</li>"
             )

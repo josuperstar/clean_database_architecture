@@ -26,33 +26,12 @@ from framework_and_drivers.composition.factory import (
     build_list_shots_controller_qt,
     build_update_shot_name_controller_qt,
 )
+from framework_and_drivers.tracking_presets import (
+    BACKEND_OPTIONS,
+    FAKE_PROJECT_PRESETS,
+    PROJECT_HINTS,
+)
 from interface_adapters.controllers.request_models import ListShotsRequestModel, UpdateShotNameRequestModel
-
-# (label, tracking, fake_vendor when tracking is fake; else None)
-_BACKEND_OPTIONS: list[tuple[str, str, str | None]] = [
-    ("Fake ShotGrid (in-memory)", "fake", "shotgun"),
-    ("Fake ftrack (in-memory)", "fake", "ftrack"),
-    ("Fake Kitsu (in-memory)", "fake", "kitsu"),
-    ("ShotGrid / Shotgun (live API)", "shotgun", None),
-    ("ftrack (live API)", "ftrack", None),
-    ("Kitsu (live API)", "kitsu", None),
-]
-
-_PROJECT_HINTS = [
-    "Try project id: demo",
-    "Try project id: ftrack-demo",
-    "Try project id: kitsu-demo",
-    "Enter your ShotGrid project id or name",
-    "Enter your ftrack project id",
-    "Enter your Kitsu project id",
-]
-
-# Preset project ids when using in-memory fakes (matches factory seeds).
-_FAKE_PROJECT_PRESETS: dict[tuple[str, str], list[str]] = {
-    ("fake", "shotgun"): ["demo"],
-    ("fake", "ftrack"): ["ftrack-demo"],
-    ("fake", "kitsu"): ["kitsu-demo"],
-}
 
 
 def _backend_from_combo(combo: QComboBox) -> tuple[str, str | None]:
@@ -101,10 +80,10 @@ def run_qt() -> int:
     window.setWindowTitle("Shots — Clean Architecture demo")
 
     source_combo = QComboBox()
-    for label, tracking, fake_vendor in _BACKEND_OPTIONS:
+    for label, tracking, fake_vendor in BACKEND_OPTIONS:
         source_combo.addItem(label, (tracking, fake_vendor))
 
-    project_hint = QLabel(_PROJECT_HINTS[0])
+    project_hint = QLabel(PROJECT_HINTS[0])
     project_hint.setWordWrap(True)
     project_hint.setStyleSheet("color: #4b5563; font-size: 11px;")
 
@@ -122,7 +101,7 @@ def run_qt() -> int:
         project_combo.clear()
         tracking, fake_vendor = _backend_from_combo(source_combo)
         fv = fake_vendor or ""
-        presets = _FAKE_PROJECT_PRESETS.get((tracking, fv), [])
+        presets = FAKE_PROJECT_PRESETS.get((tracking, fv), [])
         if presets:
             for pid in presets:
                 project_combo.addItem(pid)
@@ -132,13 +111,13 @@ def run_qt() -> int:
         project_combo.blockSignals(False)
         le = project_combo.lineEdit()
         if le is not None:
-            if 0 <= idx < len(_PROJECT_HINTS):
-                le.setPlaceholderText(_PROJECT_HINTS[idx])
+            if 0 <= idx < len(PROJECT_HINTS):
+                le.setPlaceholderText(PROJECT_HINTS[idx])
             else:
                 le.setPlaceholderText("Project id")
 
     def on_source_changed(_: int) -> None:
-        project_hint.setText(_PROJECT_HINTS[source_combo.currentIndex()])
+        project_hint.setText(PROJECT_HINTS[source_combo.currentIndex()])
         refresh_project_combo()
 
     source_combo.currentIndexChanged.connect(on_source_changed)

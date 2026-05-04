@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from framework_and_drivers.composition.factory import (
     build_list_shots_controller,
     build_update_shot_name_controller_web,
 )
+from framework_and_drivers.web.shots_browser_page import shots_browser_html
 from framework_and_drivers.web.web_shots_sink import WebPresentationResult
 from interface_adapters.controllers.request_models import ListShotsRequestModel, UpdateShotNameRequestModel
 from interface_adapters.presenters.update_shot_name_presenter import WebRenamePresentationResult
@@ -18,6 +19,12 @@ app = FastAPI(title="Shots listing (Clean Architecture demo)", version="0.1.0")
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/", response_class=HTMLResponse)
+def shots_browser_ui() -> str:
+    """Browser UI: same backend/presenters as JSON ``/shots``; colors from ``COLOR_HINT_HEX``."""
+    return shots_browser_html()
 
 
 @app.get("/shots")

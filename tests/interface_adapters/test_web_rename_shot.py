@@ -5,6 +5,18 @@ from fastapi.testclient import TestClient
 from framework_and_drivers.web.app import app
 
 
+def test_root_serves_browser_ui_with_shared_color_theme() -> None:
+    client = TestClient(app)
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "text/html" in r.headers.get("content-type", "")
+    body = r.text
+    assert 'id="boot-json"' in body
+    assert "table-scroll" in body
+    assert "Fake ShotGrid (in-memory)" in body
+    assert "#2563eb" in body  # ColorHint.BLUE in COLOR_HINT_HEX (same as Qt)
+
+
 def test_rename_shot_ok_fake_shotgun_inferred_prefix() -> None:
     client = TestClient(app)
     r = client.post(

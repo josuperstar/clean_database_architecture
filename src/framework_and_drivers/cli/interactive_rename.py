@@ -7,26 +7,12 @@ from framework_and_drivers.composition.factory import (
     build_list_shots_controller_cli_capture,
     build_update_shot_name_controller,
 )
+from framework_and_drivers.tracking_presets import BACKEND_OPTIONS, FAKE_PROJECT_PRESETS
 from interface_adapters.controllers.request_models import (
     ListShotsRequestModel,
     UpdateShotNameRequestModel,
 )
-
-# (label, tracking, fake_vendor when tracking is fake; else None) — same order as Qt demo.
-_BACKEND_OPTIONS: list[tuple[str, str, str | None]] = [
-    ("Fake ShotGrid (in-memory)", "fake", "shotgun"),
-    ("Fake ftrack (in-memory)", "fake", "ftrack"),
-    ("Fake Kitsu (in-memory)", "fake", "kitsu"),
-    ("ShotGrid / Shotgun (live API)", "shotgun", None),
-    ("ftrack (live API)", "ftrack", None),
-    ("Kitsu (live API)", "kitsu", None),
-]
-
-_FAKE_PROJECT_PRESETS: dict[tuple[str, str], list[str]] = {
-    ("fake", "shotgun"): ["demo"],
-    ("fake", "ftrack"): ["ftrack-demo"],
-    ("fake", "kitsu"): ["kitsu-demo"],
-}
+from interface_adapters.view_models.list_shots_view_model import ShotRowViewModel
 
 
 def _pick_int(prompt: str, lo: int, hi: int) -> int:
@@ -41,16 +27,34 @@ def _pick_int(prompt: str, lo: int, hi: int) -> int:
         typer.secho(f"Enter an integer from {lo} to {hi}.", fg=typer.colors.RED, err=True)
 
 
+def _resolve_shot_row(
+    rows: list[ShotRowViewModel], key: str
+) -> tuple[ShotRowViewModel | None, str | None]:
+    """Pick by 1-based index or exact current shot ``name`` (code)."""
+    key = key.strip()
+    if key.isdigit():
+        n = int(key)
+        if 1 <= n <= len(rows):
+            return rows[n - 1], None
+        return None, f"No shot #{n} (use 1–{len(rows)})."
+    matches = [r for r in rows if r.name == key]
+    if len(matches) == 1:
+        return matches[0], None
+    if not matches:
+        return None, f"No shot named {key!r}; use a number from the list or the exact shot code."
+    return None, f"Multiple shots named {key!r}; use a number (1–{len(rows)})."
+
+
 def run_interactive_rename() -> None:
     """Prompt for source → project → shot, then new name and optional first-segment override."""
     typer.echo("\nSelect source (tracking backend):\n")
-    for idx, (label, _t, _fv) in enumerate(_BACKEND_OPTIONS, start=1):
+    for idx, (label, _t, _fv) in enumerate(BACKEND_OPTIONS, start=1):
         typer.echo(f"  {idx}) {label}")
-    choice = _pick_int("Source number", 1, len(_BACKEND_OPTIONS))
-    _label, tracking, fake_vendor = _BACKEND_OPTIONS[choice - 1]
+    choice = _pick_int("Source number", 1, len(BACKEND_OPTIONS))
+    _label, tracking, fake_vendor = BACKEND_OPTIONS[choice - 1]
 
     key = (tracking, fake_vendor or "")
-    presets = _FAKE_PROJECT_PRESETS.get(key, [])
+    presets = FAKE_PROJECT_PRESETS.get(key, [])
 
     typer.echo(f"\nSelected: {_label}\n")
     project_id = ""
@@ -90,14 +94,43 @@ def run_interactive_rename() -> None:
 
     typer.echo("\nShots (same colors as `shots-cli list`):\n")
     CliShotsViewSink().render_shot_picker(cap.last_vm)
-    typer.echo("\nSelect shot to rename.")
-    schoice = _pick_int("Shot number", 1, len(rows))
-    row = rows[schoice - 1]
-
-    new_name = typer.prompt("New shot name (<sequence>_<digits>)").strip()
-    if not new_name:
-        typer.secho("New name is required.", fg=typer.colors.RED, err=True)
-        raise typer.Exit(code=1)
+    typer.echo(
+        f"\nRename: shot number (1–{len(rows)}), or `<#> <new_name>`, "
+        "or `<current_shot_code> <new_name>` (e.g. `3 SEQ02_99` or `SEQ02_30 SEQ02_99`)."
+    )
+    row: ShotRowViewModel | None = None
+    new_name = ""
+    while row is None or not new_name:
+        raw = typer.prompt("Shot / new name", default="", show_default=False).strip()
+        if not raw:
+            typer.secho("Enter a value.", fg=typer.colors.RED, err=True)
+            continue
+        parts = raw.split(None, 1)
+        if len(parts) == 2:
+            key, new_name = parts[0], parts[1].strip()
+            if not new_name:
+                typer.secho("New name cannot be empty.", fg=typer.colors.RED, err=True)
+                continue
+            got, err = _resolve_shot_row(rows, key)
+            if err:
+                typer.secho(err, fg=typer.colors.RED, err=True)
+                continue
+            row = got
+            assert row is not None
+            break
+        key = parts[0]
+        got, err = _resolve_shot_row(rows, key)
+        if err:
+            typer.secho(err, fg=typer.colors.RED, err=True)
+            continue
+        row = got
+        assert row is not None
+        new_name = typer.prompt("New shot name (<sequence>_<digits>)").strip()
+        if not new_name:
+            typer.secho("New name is required.", fg=typer.colors.RED, err=True)
+            row = None
+            continue
+        break
 
     override = typer.prompt(
         "First name segment override (Enter for shot sequence)",

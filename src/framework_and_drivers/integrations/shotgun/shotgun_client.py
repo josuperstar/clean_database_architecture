@@ -50,7 +50,9 @@ class ShotgunClient(ShotgunDataPort):
             import shotgun_api3  # type: ignore[import-not-found]
         except ImportError as exc:  # pragma: no cover - environment dependent
             raise RuntimeError(
-                "shotgun_api3 is not installed. Install with: pip install 'clean-database-architecture[shotgun]'"
+                "shotgun_api3 is not installed. Install the optional extra, e.g. "
+                "from this repo: pip install -e '.[shotgun]' — or from PyPI: "
+                "pip install 'clean-database-architecture[shotgun]'"
             ) from exc
 
         if not (self._server_path and self._script_name and self._api_key):

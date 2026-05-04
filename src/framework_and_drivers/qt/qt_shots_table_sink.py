@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from interface_adapters.view_models.color_hint_theme import COLOR_HINT_HEX
 from interface_adapters.view_models.list_shots_view_model import ColorHint, ListShotsViewModel
 
 
@@ -20,13 +21,7 @@ class QtShotsTableSink:
         from PySide6.QtGui import QBrush, QColor  # noqa: PLC0415
         from PySide6.QtWidgets import QTableWidgetItem  # noqa: PLC0415
 
-        qt_fg = {
-            ColorHint.BLUE: QColor("#2563eb"),
-            ColorHint.GREEN: QColor("#16a34a"),
-            ColorHint.GRAY: QColor("#6b7280"),
-            ColorHint.AMBER: QColor("#d97706"),
-            ColorHint.NEUTRAL: QColor("#111827"),
-        }
+        qt_fg = {hint: QColor(hex_) for hint, hex_ in COLOR_HINT_HEX.items()}
 
         self._table.clearSpans()
         self._table.setColumnCount(len(self._HEADERS))

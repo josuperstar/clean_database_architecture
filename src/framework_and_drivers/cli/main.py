@@ -12,12 +12,20 @@ from interface_adapters.controllers.request_models import (
     UpdateShotNameRequestModel,
 )
 
-app = typer.Typer(help="List and rename shots (Clean Architecture demo). Use `interactive` for guided prompts.")
+app = typer.Typer(
+    help=(
+        "List and rename shots (Clean Architecture demo). "
+        "Run with no arguments for guided mode: pick source → project → see shots → rename "
+        "(same as `shots-cli interactive`, aligned with Web/Qt)."
+    ),
+)
 
 
-@app.callback()
-def _root() -> None:
-    """Typer merges a lone @command into the root; this callback keeps `list` as a subcommand."""
+@app.callback(invoke_without_command=True)
+def _main(ctx: typer.Context) -> None:
+    """No subcommand: guided prompts; with `list` / `rename` / `interactive`, run that command."""
+    if ctx.invoked_subcommand is None:
+        run_interactive_rename()
 
 
 @app.command("list")
@@ -45,7 +53,7 @@ def list_shots(
 
 @app.command("interactive")
 def interactive() -> None:
-    """Choose source and project from lists, pick a shot, then enter the new name."""
+    """Same as running `shots-cli` with no arguments: source → project → shots → rename."""
     run_interactive_rename()
 
 

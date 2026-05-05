@@ -1,0 +1,21 @@
+# Copy to ``config.ini`` (gitignored) or set CLEAN_DATABASE_CONFIG_INI to a path.
+# Same KEY=value shape as ``.env.example``. Existing environment variables override these.
+
+# Default: in-memory fakes (no network). Optional: which vendor the fake stack mimics.
+TRACKING_BACKEND=fake
+FAKE_VENDOR=shotgun
+
+# --- ShotGrid (optional extra: pip install ".[shotgun]") ---
+# SHOTGUN_SERVER_PATH=https://your-site.shotgrid.autodesk.com
+# SHOTGUN_SCRIPT_NAME=your_script
+# SHOTGUN_API_KEY=your_key
+
+# --- ftrack (optional extra: pip install ".[ftrack]") ---
+# FTRACK_SERVER_URL=https://your.ftrackapp.com
+# FTRACK_API_USER=user@example.com
+# FTRACK_API_KEY=your_key
+
+# --- Kitsu (optional extra: pip install ".[kitsu]") ---
+# KITSU_HOST=https://your-kitsu.example/api
+# KITSU_EMAIL=you@example.com
+# KITSU_PASSWORD=your_password

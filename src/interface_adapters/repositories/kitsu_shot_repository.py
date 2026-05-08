@@ -4,7 +4,7 @@ from business_entities import ProjectId, Shot
 
 from interface_adapters.outward_interfaces.kitsu_interface import KitsuDataPort
 from interface_adapters.repositories._canonical_shot_label import canonical_shot_label
-from interface_adapters.repositories._status_mapping import normalize_vendor_status
+from interface_adapters.repositories.kitsu_shot_status import map_kitsu_shot_status
 
 
 class KitsuBackedShotRepository:
@@ -19,7 +19,7 @@ class KitsuBackedShotRepository:
                 name=(label := canonical_shot_label(row)),
                 code=label,
                 sequence=row.sequence,
-                status=normalize_vendor_status(row.status_vendor, flavor="kitsu"),
+                status=map_kitsu_shot_status(row.status_vendor),
             )
             for row in rows
         ]

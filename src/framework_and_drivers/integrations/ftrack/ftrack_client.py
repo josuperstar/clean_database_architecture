@@ -93,11 +93,24 @@ def _ftrack_attr(entity: Any, key: str, default: Any = None) -> Any:
 
 
 def _ftrack_status_vendor(status_obj: Any) -> str:
+    """
+    Collect human / short labels from ftrack ``Status`` (field names vary by version/schema).
+
+    The ftrack adapter maps this string to ``ShotStatus``; multiple fragments are ``|``-separated
+    so short codes still match when the display name is empty or odd.
+    """
     if status_obj is None:
         return ""
-    if isinstance(status_obj, dict):
-        return str(status_obj.get("name") or "")
-    return str(getattr(status_obj, "name", None) or "")
+    seen: list[str] = []
+    for key in ("name", "short", "short_name", "label", "abbreviation", "code"):
+        v = _ftrack_attr(status_obj, key)
+        if v is None:
+            continue
+        s = str(v).strip()
+        if not s or s in seen:
+            continue
+        seen.append(s)
+    return " | ".join(seen)
 
 
 def _ftrack_sequence_from_shot_parent(parent: Any) -> str | None:

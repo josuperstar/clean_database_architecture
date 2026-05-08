@@ -1,11 +1,12 @@
+"""Map Kitsu / gazu task/shot status strings to ``ShotStatus``."""
+
 from __future__ import annotations
 
 from business_entities import ShotStatus
 
 
-def normalize_vendor_status(raw: str, *, flavor: str) -> ShotStatus:
-    """Map vendor-specific status strings to `ShotStatus`. `flavor` is shotgun|ftrack|kitsu."""
-    r = raw.strip().lower()
+def map_kitsu_shot_status(raw: str) -> ShotStatus:
+    r = " ".join(str(raw).strip().split()).lower()
     if not r:
         return ShotStatus.UNKNOWN
 
@@ -26,9 +27,10 @@ def normalize_vendor_status(raw: str, *, flavor: str) -> ShotStatus:
         "todo",
         "waiting",
         "not started",
+        "not_started",
+        "not-started",
     }
     done = {
-        "fin",  # ShotGrid / Shotgun status list short code (display often "Final")
         "done",
         "complete",
         "completed",
@@ -43,7 +45,4 @@ def normalize_vendor_status(raw: str, *, flavor: str) -> ShotStatus:
         return ShotStatus.READY_TO_START
     if r in done:
         return ShotStatus.DONE
-
-    # flavor-specific short codes (examples)
-    _ = flavor  # reserved for vendor-specific tables
     return ShotStatus.UNKNOWN

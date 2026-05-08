@@ -14,7 +14,8 @@ def _coerce_sg_status_list_field(value: Any) -> str:
     ``sg_status_list`` may be a short code string, a Status entity dict, or a single-element list.
 
     Prefer ``code`` (workflow short code, e.g. ``fin``), then ``name`` (often the display label
-    ``Final``). The repository adapter maps these to ``ShotStatus`` via ``normalize_vendor_status``.
+    ``Final``). The Shotgun repository adapter maps these to ``ShotStatus`` via
+    ``map_shotgun_shot_status``.
     """
     if value is None:
         return ""

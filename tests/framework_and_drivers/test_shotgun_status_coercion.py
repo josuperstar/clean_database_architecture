@@ -4,7 +4,7 @@ import pytest
 
 from business_entities import ShotStatus
 from framework_and_drivers.integrations.shotgun.shotgun_client import _coerce_sg_status_list_field
-from interface_adapters.repositories._status_mapping import normalize_vendor_status
+from interface_adapters.repositories.shotgun_shot_status import map_shotgun_shot_status
 
 
 @pytest.mark.parametrize(
@@ -24,5 +24,5 @@ def test_coerce_sg_status_list_field(value: object, expected: str) -> None:
 
 
 def test_shotgun_fin_and_final_map_to_done() -> None:
-    assert normalize_vendor_status("fin", flavor="shotgun") is ShotStatus.DONE
-    assert normalize_vendor_status("Final", flavor="shotgun") is ShotStatus.DONE
+    assert map_shotgun_shot_status("fin") is ShotStatus.DONE
+    assert map_shotgun_shot_status("Final") is ShotStatus.DONE

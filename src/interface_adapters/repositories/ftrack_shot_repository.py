@@ -4,7 +4,7 @@ from business_entities import ProjectId, Shot
 
 from interface_adapters.outward_interfaces.ftrack_interface import FtrackDataPort
 from interface_adapters.repositories._canonical_shot_label import canonical_shot_label
-from interface_adapters.repositories._status_mapping import normalize_vendor_status
+from interface_adapters.repositories.ftrack_shot_status import map_ftrack_shot_status
 
 
 class FtrackBackedShotRepository:
@@ -19,7 +19,7 @@ class FtrackBackedShotRepository:
                 name=(label := canonical_shot_label(row)),
                 code=label,
                 sequence=row.sequence,
-                status=normalize_vendor_status(row.status_vendor, flavor="ftrack"),
+                status=map_ftrack_shot_status(row.status_vendor),
             )
             for row in rows
         ]

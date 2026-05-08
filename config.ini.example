@@ -14,6 +14,7 @@ FAKE_VENDOR=shotgun
 # FTRACK_SERVER_URL=https://your.ftrackapp.com
 # FTRACK_API_USER=user@example.com
 # FTRACK_API_KEY=your_key
+# FTRACK_AUTO_NO_PROXY=1
 
 # --- Kitsu (optional extra: pip install ".[kitsu]") ---
 # KITSU_HOST=https://your-kitsu.example/api

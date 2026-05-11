@@ -1,4 +1,0 @@
-business_entities
-framework_and_drivers
-interface_adapters
-use_cases

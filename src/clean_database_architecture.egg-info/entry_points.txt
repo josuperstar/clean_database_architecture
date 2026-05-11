@@ -1,2 +1,0 @@
-[console_scripts]
-shots-cli = framework_and_drivers.cli.main:run_cli

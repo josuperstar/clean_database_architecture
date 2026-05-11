@@ -1,0 +1,10 @@
+# https://editorconfig.org — keep text UTF-8 so README / Py / TOML are not saved as UTF-16.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.{md,py,toml,yml,yaml,ini}]
+charset = utf-8
